@@ -6,6 +6,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import LayoutVue from '@/views/Menu.vue'
 import MainVue from '@/views/Main.vue'
 import OrderListVue from '@/views/order/OrderList.vue'
+import StatisticsVue from '@/views/order/Statistics.vue'
 
 //定义路由
 const routes = [
@@ -15,6 +16,7 @@ const routes = [
         path: '/', component: LayoutVue, redirect: '/main', children: [
             { path: '/main', component: MainVue },
             { path: '/orderList', component: OrderListVue },
+            { path: '/statistics', component: StatisticsVue },
         ]
     }
 ]
