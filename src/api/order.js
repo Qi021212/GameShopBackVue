@@ -1,4 +1,5 @@
 import request from '@/utils/request';
+import axios from 'axios';
 
 // 获取订单列表
 export const getOrderList = async () => {
@@ -20,20 +21,16 @@ export const getOrderDetail = async (id) => {
     }
 };
 
-// 切换订单状态
+// 标记为已读
 export const toggleOrderStatus = async (id) => {
     try {
-        const response = await request.post(`/orders/${id}/toggle-status`);
-        return response.data; // 返回后端响应的数据
+      const response = await request.put(`/orders/ship/${id}`); // 调用后端 API
+      return response; // 返回后端返回的数据
     } catch (error) {
-        // 如果后端返回了错误信息，抛出错误
-        if (error.response && error.response.data && error.response.data.error) {
-            throw new Error(error.response.data.error);
-        } else {
-            throw new Error('切换订单状态失败，请稍后重试');
-        }
+      console.error('Failed to toggle order status:', error);
+      throw error;
     }
-};
+  };
 
 // 搜索订单
 // export const searchOrder = async (keyword) => {
@@ -62,5 +59,15 @@ export const getTrendData = async () => {
         return response;
     } catch (error) {
         throw new Error('获取走势图数据失败');
+    }
+}
+
+//获取饼图数据
+export const getPieData = async () => {
+    try {
+        const response = await request.get('/statistics/sales/category');
+        return response;
+    } catch (error) {
+        throw new Error('获取饼图数据失败');
     }
 }

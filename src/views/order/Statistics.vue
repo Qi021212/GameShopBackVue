@@ -80,7 +80,7 @@ onMounted(() => {
             <el-col :span="11">
                 <el-card class="chart-card">
                     <h3>各类游戏销量分布图</h3>
-                    <!-- <PieChart /> -->
+                    <PieChart />
                 </el-card>
             </el-col>
         </el-row>
