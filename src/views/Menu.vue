@@ -59,7 +59,7 @@ const route = router.currentRoute;
                             <span>订单管理</span>
                         </template>
                         <el-menu-item index="/orderList">订单列表</el-menu-item>
-                        <el-menu-item index="3-2">数据报表</el-menu-item>
+                        <el-menu-item index="/statistics">数据报表</el-menu-item>
                     </el-sub-menu>
                     <el-sub-menu index="4">
                         <template #title>
