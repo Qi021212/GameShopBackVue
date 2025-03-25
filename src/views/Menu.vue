@@ -59,7 +59,7 @@ const route = router.currentRoute;
                             <span>订单管理</span>
                         </template>
                         <el-menu-item index="/orderList">订单列表</el-menu-item>
-                        <el-menu-item index="3-2">数据报表</el-menu-item>
+                        <el-menu-item index="/statistics">数据报表</el-menu-item>
                     </el-sub-menu>
                     <el-sub-menu index="4">
                         <template #title>
@@ -70,6 +70,7 @@ const route = router.currentRoute;
                         </template>
                         <el-menu-item index="/UserList">用户列表</el-menu-item>
                         <el-menu-item index="/MerchantInformation">详情信息</el-menu-item>
+                        <el-menu-item index="/MerchantChangePassword">修改密码</el-menu-item>
                     </el-sub-menu>
                 </el-menu>
             </el-aside>

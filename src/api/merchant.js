@@ -47,3 +47,9 @@ export const updateUserInfoService = (userInfoData) => {
         }
     }).then(response => response.data);
 };
+
+
+
+export const MerchantResetPasswordService = (data)=>{
+    return request.patch('/user/updatePwd', data)
+}

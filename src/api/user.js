@@ -73,3 +73,8 @@ export const resetPasswordById = async (id) => {
       throw error; // 抛出错误，交给调用者处理
   }
 };
+//获取总数
+export const getTotalUsers = () => {
+  return request.get('/api/users/total')
+      .then(response => response.data);
+};

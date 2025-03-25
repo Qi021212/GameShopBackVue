@@ -6,8 +6,9 @@ import { createRouter, createWebHistory } from 'vue-router'
 import LayoutVue from '@/views/Menu.vue'
 import MainVue from '@/views/Main.vue'
 import OrderListVue from '@/views/order/OrderList.vue'
-import UserList from '@/views/usermanagement/UserList.vue'
-import MerchantInformation from '@/views/usermanagement/MerchantInformation.vue'
+import UserListVue from '@/views/usermanagement/UserList.vue'
+import MerchantInformationVue from '@/views/usermanagement/MerchantInformation.vue'
+import MerchantChangePasswordVue from '@/views/usermanagement/MerchantChangePassword.vue'
 
 //定义路由
 const routes = [
@@ -17,8 +18,9 @@ const routes = [
         path: '/', component: LayoutVue, redirect: '/main', children: [
             { path: '/main', component: MainVue },
             { path: '/orderList', component: OrderListVue },
-            {path:'/UserList',component:UserList},
-            {path:'/MerchantInformation',component:MerchantInformation}
+            { path: '/UserList', component: UserListVue },
+            { path: '/MerchantInformation', component:MerchantInformationVue }, 
+            { path: '/MerchantChangePassword', component: MerchantChangePasswordVue },
         ]
     }
 ]
