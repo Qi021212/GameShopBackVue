@@ -68,8 +68,8 @@ const route = router.currentRoute;
                             </el-icon>
                             <span>用户管理</span>
                         </template>
-                        <el-menu-item index="4-1">用户列表</el-menu-item>
-                        <el-menu-item index="4-2">详情信息</el-menu-item>
+                        <el-menu-item index="/UserList">用户列表</el-menu-item>
+                        <el-menu-item index="/MerchantInformation">详情信息</el-menu-item>
                     </el-sub-menu>
                 </el-menu>
             </el-aside>
