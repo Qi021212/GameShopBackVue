@@ -2,6 +2,7 @@
 import { ElMessage } from 'element-plus';
 import { ref, nextTick } from 'vue';
 import { addProduct } from '@/api/product.js';
+import defaultImage from '@/assets/ProductsManage/img/loading.png';
 
 // 商品详细信息相关数据
 const productName = ref('');              // 商品名称
@@ -168,9 +169,9 @@ const submitProduct = async () => {
     productType.value = '';
     productDescription.value = '';
     // 重置图片相关数据
-    productPicture.value = require('@/assets/ProductsManage/img/未加载图片.png');
+    productPicture.value = defaultImage;
     selectedImageFile.value = null;
-    imagePreview.value = '../assets/ProductsManage/img/未加载图片.png';
+    imagePreview.value = defaultImage;
     classificationItems.value = [];
     productPrice.value = '';
     productStorage.value = '';

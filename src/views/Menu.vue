@@ -31,9 +31,8 @@ const handleLogout = () => {
     <el-container class="layout-container">
         <el-header>
             <div class="logo"></div>
-            <h3>GameShop·管理员系统</h3>
+            <h2>GameShop·管理员系统</h2>
             <div class="link">
-                <el-link :underline="false" @click="router.push('/merchantInformation')"><el-avatar :size="60">{{ currentUser }}</el-avatar></el-link>
                 <el-link :underline="false" :icon="CircleCloseFilled" @click="handleLogout">退出登录</el-link>
             </div>
         </el-header>

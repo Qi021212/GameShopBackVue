@@ -67,7 +67,7 @@ const submit = () => {
     <el-card class="page-container">
         <template #header>
             <div class="header">
-                <span>重置密码</span>
+                <h2>修改密码</h2>
             </div>
         </template>
         <el-row>
@@ -90,3 +90,26 @@ const submit = () => {
         </el-row>
     </el-card>
 </template>
+<style scoped>
+.page-container {
+  background-color: #fff;
+  height: 100%;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+:deep(.el-card__header) {
+  border-bottom: none !important;
+  /* 去掉下划线 */
+  padding-bottom: 0;
+  /* 去掉多余的 padding */
+}
+
+h2 {
+  margin: 0;
+}
+</style>
