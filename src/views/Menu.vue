@@ -2,22 +2,28 @@
 import { ElContainer, ElHeader, ElMain, ElMessageBox, ElAside, ElMenu, ElMenuItem, ElSubMenu, ElAvatar, ElLink } from 'element-plus';
 import { HomeFilled, GoodsFilled, List, UserFilled, CircleCloseFilled } from '@element-plus/icons-vue';
 import { useRouter } from 'vue-router';
+import { ref } from 'vue';
 const router = useRouter();
 const route = router.currentRoute;
 
-// //退出登录
-// const handleLogout = () => {
-//     ElMessageBox.confirm('确定要退出登录吗？', '提示', {
-//         confirmButtonText: '确定',
-//         cancelButtonText: '取消',
-//         type: 'warning',
-//     }).then(() => {
-//         // 用户点击确定，执行退出登录操作
-//         router.push('/login'); // 退出登录后跳转到登录页面
-//     }).catch(() => {
-//         // 用户点击取消，不做任何操作
-//     });
-// };
+// 模拟登录用户(未获取版)
+const currentUser = ref('管理员'); // 可以根据实际登录用户动态设置
+
+
+//退出登录
+const handleLogout = () => {
+  ElMessageBox.confirm('确定要退出登录吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  }).then(() => {
+    // 用户点击确定，执行退出登录操作
+    router.push('/login'); // 假设退出登录后跳转到登录页面
+  }).catch(() => {
+    // 用户点击取消，不做任何操作
+  });
+};
+
 
 </script>
 
@@ -26,8 +32,10 @@ const route = router.currentRoute;
         <el-header>
             <div class="logo"></div>
             <h3>GameShop·管理员系统</h3>
-            <el-avatar :size="60"></el-avatar>
-            <el-link :underline="false" :icon="CircleCloseFilled" @click="handleLogout">退出登录</el-link>
+            <div class="link">
+                <el-link :underline="false" @click="router.push('/merchantInformation')"><el-avatar :size="60">{{ currentUser }}</el-avatar></el-link>
+                <el-link :underline="false" :icon="CircleCloseFilled" @click="handleLogout">退出登录</el-link>
+            </div>
         </el-header>
 
         <el-container>
@@ -106,7 +114,7 @@ const route = router.currentRoute;
     margin-left: 10px;
 }
 
-.el-header .el-avatar {
+.el-header .link {
     margin-left: auto;
     margin-right: 20px;
 }

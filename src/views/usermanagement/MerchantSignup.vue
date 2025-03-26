@@ -54,7 +54,7 @@ const register = async () => {
         const result = await BusinessRegisterService(registerData.value);
         if (result.success) { // 后端返回 { message: "注册成功", success: true }
             ElMessage.success('注册成功！');
-            router.push('/Merchantlogin'); // 注册成功后跳转到登录页
+            router.push('/login'); // 注册成功后跳转到登录页
         } else {
             ElMessage.error(result.message || '注册失败');
         }
@@ -87,7 +87,7 @@ const register = async () => {
                     <el-button type="primary" @click="register">注册</el-button>
                 </el-form-item>
                 <el-form-item class="text-center">
-                    已有帐号？<el-link type="primary" :underline="false" @click="router.push('/Merchantlogin')">返回登录</el-link>
+                    已有帐号？<el-link type="primary" :underline="false" @click="router.push('/login')">返回登录</el-link>
                 </el-form-item>
             </el-form>
         </el-col>

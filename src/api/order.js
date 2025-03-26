@@ -1,11 +1,10 @@
 import request from '@/utils/request';
-import axios from 'axios';
 
 // 获取订单列表
 export const getOrderList = async () => {
     try {
         const response = await request.get('/orders/main');
-        return response;
+        return response.data;
     } catch (error) {
         throw new Error('获取订单数据失败');
     }
@@ -15,7 +14,7 @@ export const getOrderList = async () => {
 export const getOrderDetail = async (id) => {
     try {
         const response = await request.get(`/orders/detail/${id}`);
-        return response;
+        return response.data;
     } catch (error) {
         throw new Error('获取订单详情失败');
     }
@@ -25,7 +24,7 @@ export const getOrderDetail = async (id) => {
 export const toggleOrderStatus = async (id) => {
     try {
       const response = await request.put(`/orders/ship/${id}`); // 调用后端 API
-      return response; // 返回后端返回的数据
+      return response.data; // 返回后端返回的数据
     } catch (error) {
       console.error('Failed to toggle order status:', error);
       throw error;
@@ -46,7 +45,7 @@ export const toggleOrderStatus = async (id) => {
 export const getSalesData = async () => {
     try {
         const response = await request.get('/statistics');
-        return response;
+        return response.data;
     } catch (error) {
         throw new Error('获取销售数据失败');
     }

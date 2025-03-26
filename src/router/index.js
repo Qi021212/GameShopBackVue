@@ -1,8 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
 //导入组件
- import MerchantSignupVue from '@/views/usermanagement/MerchantSignup.vue'
- import MerchantLoginVue from '@/views/usermanagement/MerchantLogin.vue'
+import MerchantSignupVue from '@/views/usermanagement/MerchantSignup.vue'
+import MerchantLoginVue from '@/views/usermanagement/MerchantLogin.vue'
 import LayoutVue from '@/views/Menu.vue'
 import MainVue from '@/views/Main.vue'
 import OrderListVue from '@/views/order/OrderList.vue'
@@ -12,8 +12,8 @@ import MerchantChangePasswordVue from '@/views/usermanagement/MerchantChangePass
 
 //定义路由
 const routes = [
-       { path: '/MerchantSignup', component: MerchantSignupVue },
-       { path: '/MerchantLogin', component: MerchantLoginVue },
+       { path: '/signup', component: MerchantSignupVue },
+       { path: '/login', component: MerchantLoginVue },
     {
         path: '/', component: LayoutVue, redirect: '/main', children: [
             { path: '/main', component: MainVue },

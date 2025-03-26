@@ -113,9 +113,9 @@ onMounted(() => {
                         <el-icon :size="30"><DataBoard /></el-icon>
                         <p>查看数据</p>
                     </el-col>
-                    <el-col :span="8" class="shortcut-item" @click="navigateTo('/')">
+                    <el-col :span="8" class="shortcut-item" @click="navigateTo('/userList')">
                         <el-icon :size="30"><Setting /></el-icon>
-                        <p>管理员设置</p>
+                        <p>用户管理</p>
                     </el-col>
                 </el-row>
             </el-card>

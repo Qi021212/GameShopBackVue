@@ -17,6 +17,7 @@ const statusMap = {
 const fetchOrderList = async () => {
   try {
     const response = await getOrderList(); // 调用 getOrderList
+    console.log(response);
     if (response && Array.isArray(response)) { // 检查是否为数组
       orderData.value = response;
     } else {
