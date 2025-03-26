@@ -2,8 +2,13 @@
 import { ElContainer, ElHeader, ElMain, ElMessageBox, ElAside, ElMenu, ElMenuItem, ElSubMenu, ElAvatar, ElLink } from 'element-plus';
 import { HomeFilled, GoodsFilled, List, UserFilled, CircleCloseFilled } from '@element-plus/icons-vue';
 import { useRouter } from 'vue-router';
+import { ref } from 'vue';
 const router = useRouter();
 const route = router.currentRoute;
+
+// 模拟登录用户(未获取版)
+const currentUser = ref('管理员'); // 可以根据实际登录用户动态设置
+
 
 //退出登录
 const handleLogout = () => {
@@ -27,8 +32,10 @@ const handleLogout = () => {
         <el-header>
             <div class="logo"></div>
             <h3>GameShop·管理员系统</h3>
-            <el-avatar :size="60"></el-avatar>
-            <el-link :underline="false" :icon="CircleCloseFilled" @click="handleLogout">退出登录</el-link>
+            <div class="link">
+                <el-link :underline="false" @click="router.push('/merchantInformation')"><el-avatar :size="60">{{ currentUser }}</el-avatar></el-link>
+                <el-link :underline="false" :icon="CircleCloseFilled" @click="handleLogout">退出登录</el-link>
+            </div>
         </el-header>
 
         <el-container>
@@ -106,7 +113,7 @@ const handleLogout = () => {
     margin-left: 10px;
 }
 
-.el-header .el-avatar {
+.el-header .link {
     margin-left: auto;
     margin-right: 20px;
 }
