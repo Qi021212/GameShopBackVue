@@ -47,3 +47,9 @@ export const updateUserInfoService = (userInfoData) => {
         }
     }).then(response => response.data);
 };
+
+
+
+export const MerchantResetPasswordService = (data)=>{
+    return request.post('/api/user/updatePwd', data)
+}

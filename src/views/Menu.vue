@@ -78,7 +78,8 @@ const handleLogout = () => {
                             <span>用户管理</span>
                         </template>
                         <el-menu-item index="/UserList">用户列表</el-menu-item>
-                        <el-menu-item index="/MerchantInformation">商家资料</el-menu-item>
+                        <el-menu-item index="/MerchantInformation">详情信息</el-menu-item>
+                        <el-menu-item index="/MerchantChangePassword">修改密码</el-menu-item>
                     </el-sub-menu>
                 </el-menu>
             </el-aside>

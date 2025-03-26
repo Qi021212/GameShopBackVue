@@ -1,6 +1,6 @@
 <script setup>
 import { ElContainer, ElAside, ElCard, ElRow, ElCol, ElIcon, ElStatistic, ElLink,ElMessage } from 'element-plus';
-import { ref,onMounted} from 'vue';
+import { ref,onMounted,computed} from 'vue';
 import dayjs from 'dayjs';
 import { useRouter } from 'vue-router';
 // 路由实例
@@ -9,8 +9,16 @@ const router = useRouter();
 // 图标引入
 import { Plus, DataBoard, Setting } from '@element-plus/icons-vue';
 
+import { useMerchantInfoStore } from '@/stores/MerchantInfo';
+import { useTokenStore } from '@/stores/token';
+
+const merchantInfoStore = useMerchantInfoStore();
+const tokenStore = useTokenStore();
 // 模拟登录用户(未获取版)
-const currentUser = ref('管理员'); // 可以根据实际登录用户动态设置
+
+const currentUser = computed(() => {
+  return merchantInfoStore.info?.merchantname || '未知用户';
+}); // 可以根据实际登录用户动态设置
 
 
 // 跳转函数
@@ -26,18 +34,39 @@ const itemList = ref([
 ]);
 
 import {getSalesData,getOrderList} from '@/api/order.js';
+import {getTotalUsers} from '@/api/user.js';
+//import { c } from 'vite/dist/node/moduleRunnerTransport.d-CXw_Ws6P';
 //statistic-card
 const ordersOfToday = ref(0);
 const totalCustomers = ref(0);
 const fetchData = async () => {
     try {
         const response = await getSalesData(); 
+        const usersResponse = await getTotalUsers();
         // 更新数据
         ordersOfToday.value = response.ordersOfToday;
+        if (usersResponse.success) {
+             totalCustomers.value = usersResponse.user_total;
+        } else {
+            ElMessage.error(usersResponse.message || '获取用户总数失败');
+        }
     } catch (error) {
         console.error('Error fetching data:', error);
     }
+
 };
+onMounted(() => {
+  // 如果用户信息不存在，但已登录，尝试重新获取
+  if (!merchantInfoStore.info && tokenStore.isAuthenticated) {
+    const merchantId = localStorage.getItem('merchantId');
+    if (merchantId) {
+      merchantInfoStore.fetchMerchantInfo(merchantId).catch(error => {
+        ElMessage.error('获取用户信息失败：' + error.message);
+      });
+    }
+  }
+  fetchData();
+});
 
 //orderlist-card
 const orderData = ref([]);
