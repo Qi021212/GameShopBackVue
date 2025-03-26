@@ -57,7 +57,8 @@ const handleLogout = () => {
                             </el-icon>
                             <span>商品管理</span>
                         </template>
-                        <el-menu-item index="2-1">商品列表</el-menu-item>
+                        <el-menu-item index="/productsManage">商品列表</el-menu-item>
+                        <el-menu-item index="/addProducts">商品添加</el-menu-item>
                     </el-sub-menu>
                     <el-sub-menu index="3">
                         <template #title>

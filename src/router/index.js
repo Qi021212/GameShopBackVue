@@ -9,6 +9,10 @@ import OrderListVue from '@/views/order/OrderList.vue'
 import StatisticsVue from '@/views/order/Statistics.vue'
 import UserListVue from '@/views/usermanagement/UserList.vue'
 import MerchantInformationVue from '@/views/usermanagement/MerchantInformation.vue'
+import ProductsManageVue from '@/views/products/ProductsManage.vue'
+import ProductsDetailVue from '@/views/products/ProductsDetail.vue'
+import AddProductsVue from '@/views/products/AddProducts.vue'
+import ModifyProductVue from '@/views/products/ModifyProduct.vue'
 
 //定义路由
 const routes = [
@@ -20,7 +24,11 @@ const routes = [
             { path: '/orderList', component: OrderListVue },
             { path: '/statistics', component: StatisticsVue },
             { path: '/userList', component: UserListVue },
-            { path: '/merchantInformation', component: MerchantInformationVue }
+            { path: '/merchantInformation', component: MerchantInformationVue },
+            { path: '/productsManage', component: ProductsManageVue },
+            { path: '/productsDetail/:id', component: ProductsDetailVue },
+            { path: '/addProducts', component: AddProductsVue },
+            { path: '/modifyProduct/:id', component: ModifyProductVue },
         ]
     }
 ]
