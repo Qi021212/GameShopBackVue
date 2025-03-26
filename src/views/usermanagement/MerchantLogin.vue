@@ -62,7 +62,7 @@ const login = async () => {
                     <el-button type="primary" @click="login">登录</el-button>
                 </el-form-item>
                 <el-form-item class="text-center">
-                    还没有帐号？<el-link type="primary" :underline="false" @click="router.push('/Merchantsignup')">去注册</el-link>
+                    还没有帐号？<el-link type="primary" :underline="false" @click="router.push('/signup')">去注册</el-link>
                 </el-form-item>
             </el-form>
         </el-col>

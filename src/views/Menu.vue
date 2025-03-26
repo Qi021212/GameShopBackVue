@@ -5,19 +5,20 @@ import { useRouter } from 'vue-router';
 const router = useRouter();
 const route = router.currentRoute;
 
-// //退出登录
-// const handleLogout = () => {
-//     ElMessageBox.confirm('确定要退出登录吗？', '提示', {
-//         confirmButtonText: '确定',
-//         cancelButtonText: '取消',
-//         type: 'warning',
-//     }).then(() => {
-//         // 用户点击确定，执行退出登录操作
-//         router.push('/login'); // 退出登录后跳转到登录页面
-//     }).catch(() => {
-//         // 用户点击取消，不做任何操作
-//     });
-// };
+//退出登录
+const handleLogout = () => {
+  ElMessageBox.confirm('确定要退出登录吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  }).then(() => {
+    // 用户点击确定，执行退出登录操作
+    router.push('/login'); // 假设退出登录后跳转到登录页面
+  }).catch(() => {
+    // 用户点击取消，不做任何操作
+  });
+};
+
 
 </script>
 
@@ -69,7 +70,7 @@ const route = router.currentRoute;
                             <span>用户管理</span>
                         </template>
                         <el-menu-item index="/UserList">用户列表</el-menu-item>
-                        <el-menu-item index="/MerchantInformation">详情信息</el-menu-item>
+                        <el-menu-item index="/MerchantInformation">商家资料</el-menu-item>
                     </el-sub-menu>
                 </el-menu>
             </el-aside>

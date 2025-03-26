@@ -79,7 +79,8 @@ export default {
         // 调用后端 API 获取数据
         const response = await getPieData();
 
-        const data = response; 
+        const data = response.data; 
+        console.log(data);
 
         if (!data || !Array.isArray(data)) {
           throw new Error('Invalid data format');

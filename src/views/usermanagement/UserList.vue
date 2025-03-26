@@ -300,11 +300,10 @@ async resetPassword(id) {
     <!-- 卡片视图区域 -->
     <el-card class="box-card">
       <template #header>
-        <div class="header">
-          <span>用户列表</span>
+        <div class="card-header">
+          <h2>用户列表</h2>
         </div>
       </template>
-
       <!-- 搜索与添加区域 -->
       <el-row :gutter="20">
         <el-col :span="8">
@@ -429,7 +428,25 @@ async resetPassword(id) {
 </template>
 
 <style lang="less" scoped>
-.header {
-  font-weight: bold;
+.box-card {
+  background-color: #fff;
+  height: 100%;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+:deep(.el-card__header) {
+  border-bottom: none !important;
+  /* 去掉下划线 */
+  padding-bottom: 0;
+  /* 去掉多余的 padding */
+}
+
+h2 {
+  margin: 0;
 }
 </style>

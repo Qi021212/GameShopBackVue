@@ -1,20 +1,11 @@
 //导入request.js
-
 import request from '@/utils/request'
 import axios from 'axios';  // 导入 axios
-
-
-
-
-
 
 //获取用户列表
 export const fetchUserList = (queryInfo) => {
   return axios.get('/api/users', { params: queryInfo });
 };
-
-
-
 
 // 添加新用户
 export const addUser = (userData) => {

@@ -33,7 +33,7 @@ const rules = ref({
 const getMerchantInfo = async () => {
     if (!tokenStore.isAuthenticated) {
         ElMessage.error('请先登录');
-        router.push('/');
+        router.push('/login');
         return;
     }
     try {
@@ -74,7 +74,7 @@ const updateMerchant = async () => {
     <el-card class="page-container">
         <template #header>
             <div class="header">
-                <span>商家资料</span>
+                <h2>商家资料</h2>
             </div>
         </template>
         <el-row>
@@ -100,10 +100,24 @@ const updateMerchant = async () => {
 
 <style scoped>
 .page-container {
-    margin: 20px;
+  background-color: #fff;
+  height: 100%;
 }
-.header {
-    font-size: 18px;
-    font-weight: bold;
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+:deep(.el-card__header) {
+  border-bottom: none !important;
+  /* 去掉下划线 */
+  padding-bottom: 0;
+  /* 去掉多余的 padding */
+}
+
+h2 {
+  margin: 0;
 }
 </style>

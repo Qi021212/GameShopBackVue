@@ -92,7 +92,7 @@ export default {
       const response = await getTrendData();
 
         // 直接使用 response
-      const data = response;
+      const data = response.data;
 
       if (!data || !Array.isArray(data)) {
         throw new Error('Invalid data format');
