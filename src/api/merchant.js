@@ -51,5 +51,5 @@ export const updateUserInfoService = (userInfoData) => {
 
 
 export const MerchantResetPasswordService = (data)=>{
-    return request.patch('/user/updatePwd', data)
+    return request.post('/api/user/updatePwd', data)
 }

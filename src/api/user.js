@@ -75,6 +75,6 @@ export const resetPasswordById = async (id) => {
 };
 //获取总数
 export const getTotalUsers = () => {
-  return request.get('/api/users/total')
+  return request.get('/users/total')
       .then(response => response.data);
 };

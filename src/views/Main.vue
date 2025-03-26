@@ -35,6 +35,7 @@ const itemList = ref([
 
 import {getSalesData,getOrderList} from '@/api/order.js';
 import {getTotalUsers} from '@/api/user.js';
+//import { c } from 'vite/dist/node/moduleRunnerTransport.d-CXw_Ws6P';
 //statistic-card
 const ordersOfToday = ref(0);
 const totalCustomers = ref(0);
@@ -45,7 +46,7 @@ const fetchData = async () => {
         // 更新数据
         ordersOfToday.value = response.ordersOfToday;
         if (usersResponse.success) {
-            totalCustomers.value = usersResponse.user_total;
+             totalCustomers.value = usersResponse.user_total;
         } else {
             ElMessage.error(usersResponse.message || '获取用户总数失败');
         }
@@ -53,7 +54,6 @@ const fetchData = async () => {
         console.error('Error fetching data:', error);
     }
 
-    
 };
 onMounted(() => {
   // 如果用户信息不存在，但已登录，尝试重新获取

@@ -7,6 +7,7 @@ import {useMerchantInfoStore} from '@/stores/MerchantInfo.js'
 import { useRouter } from 'vue-router'
 
 const pwdModel = ref({
+    id: useMerchantInfoStore().info.id,
     old_pwd: '',
     new_pwd: '',
     con_pwd: ''
@@ -45,10 +46,10 @@ const submit = () => {
         if (valid) {
             //2.调用更新密码接口
             let result = await MerchantResetPasswordService(pwdModel.value)
-            let message = result.message
-            if (result.code == 0) {
-                if (result.code == 0) {
-                    ElMessage.success(message ? message : '密码修改成功!')
+            let message = result.msg
+            if (result.status == 200) {
+                if (result.status == 200) {
+                    ElMessage.success(message)
                     //3.密码修改成功,清空token和用户信息
                     useTokenStore().removeToken()
                     useMerchantInfoStore().removeInfo()
