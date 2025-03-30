@@ -9,33 +9,52 @@ const router = useRouter();
 // 图标引入
 import { Plus, DataBoard, Setting } from '@element-plus/icons-vue';
 
+// 模拟登录用户
 import { useMerchantInfoStore } from '@/stores/MerchantInfo';
 import { useTokenStore } from '@/stores/token';
-
 const merchantInfoStore = useMerchantInfoStore();
 const tokenStore = useTokenStore();
-// 模拟登录用户(未获取版)
-
 const currentUser = computed(() => {
   return merchantInfoStore.info?.merchantname || '未知用户';
 }); // 可以根据实际登录用户动态设置
-
+onMounted(() => {
+  // 如果用户信息不存在，但已登录，尝试重新获取
+  if (!merchantInfoStore.info && tokenStore.isAuthenticated) {
+    const merchantId = localStorage.getItem('merchantId');
+    if (merchantId) {
+      merchantInfoStore.fetchMerchantInfo(merchantId).catch(error => {
+        ElMessage.error('获取用户信息失败：' + error.message);
+      });
+    }
+  }
+  fetchData();
+});
 
 // 跳转函数
 const navigateTo = (path) => {
     router.push(path);
 };
 
-// 模拟数据（未获取版）
-const itemList = ref([
-    { id: 1, name: '商品A', price: 100 },
-    { id: 2, name: '商品B', price: 200 },
-    { id: 3, name: '商品C', price: 300 },
-]);
+// itemlist-card
+import { getProductsList} from '@/api/product.js';
+const itemData = ref([]);
+const fetchItemList = async () => {
+    try {
+        const response = await getProductsList(); // 调用 getOrderList
+        if (response && Array.isArray(response)) { // 检查是否为数组
+            itemData.value = response;
+
+        } else {
+            ElMessage.warning('未获取到商品数据');
+        }
+    } catch (error) {
+        ElMessage.error('获取商品数据失败');
+    }
+};
+
 
 import {getSalesData,getOrderList} from '@/api/order.js';
 import {getTotalUsers} from '@/api/user.js';
-//import { c } from 'vite/dist/node/moduleRunnerTransport.d-CXw_Ws6P';
 //statistic-card
 const ordersOfToday = ref(0);
 const totalCustomers = ref(0);
@@ -55,18 +74,8 @@ const fetchData = async () => {
     }
 
 };
-onMounted(() => {
-  // 如果用户信息不存在，但已登录，尝试重新获取
-  if (!merchantInfoStore.info && tokenStore.isAuthenticated) {
-    const merchantId = localStorage.getItem('merchantId');
-    if (merchantId) {
-      merchantInfoStore.fetchMerchantInfo(merchantId).catch(error => {
-        ElMessage.error('获取用户信息失败：' + error.message);
-      });
-    }
-  }
-  fetchData();
-});
+
+
 
 //orderlist-card
 const orderData = ref([]);
@@ -89,6 +98,7 @@ const fetchOrderList = async () => {
 //在组件挂载时获取数据
 onMounted(() => {
     fetchData();
+    fetchItemList();
     fetchOrderList();
 });
 </script>
@@ -124,9 +134,9 @@ onMounted(() => {
             <el-card class="itemlist-card">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                     <h3>商品列表</h3>
-                    <el-link @click="navigateTo('/product-detail')">查看详情 ></el-link>
+                    <el-link @click="navigateTo('/product-detail')" :underline="false">查看详情 ></el-link>
                 </div>
-                <el-table :data="itemList" stripe>
+                <el-table :data="itemData" stripe>
                     <el-table-column prop="id" label="ID" width="100" />
                     <el-table-column prop="name" label="商品名称" />
                     <el-table-column prop="price" label="价格" />
@@ -157,7 +167,7 @@ onMounted(() => {
             <el-card class="orderlist-card">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                     <h3>订单列表</h3>
-                    <el-link @click="navigateTo('/orderList')">查看详情 ></el-link>
+                    <el-link @click="navigateTo('/orderList')" :underline="false">查看详情 ></el-link>
                 </div>
                 <el-table :data="orderData" stripe>
                     <el-table-column prop="id" label="订单ID" width="100" />
@@ -200,6 +210,18 @@ onMounted(() => {
 }
 
 .itemlist-card {
+    height: 540px; /* 固定高度 */
+    display: flex;
+    flex-direction: column;
+}
+
+.itemlist-card .el-table {
+    height: 450px;
+    flex: 1; /* 让表格占据剩余空间 */
+    overflow-y: auto; /* 添加滚动条 */
+}
+
+.itemlist-card {
     flex: 1;
 }
 
@@ -234,6 +256,7 @@ p {
 
 .el-link {
     font-size: 14px;
+
 }
 
 </style>

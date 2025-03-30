@@ -189,8 +189,8 @@ const submitModifiedProduct = async () => {
     category: productCategory.value,
     type: productType.value,
     description: productDescription.value,
-    price: parseFloat(productPrice.value),
-    storage: parseInt(productStorage.value)
+    price:price,
+    storage: storage
   };
   // 构造 FormData
   const formData = new FormData();

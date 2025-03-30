@@ -188,7 +188,7 @@ const submitProduct = async () => {
     <div class="main">
       <div class="card">
         <div style="padding: 20px 5px 0px 20px;">
-          <h1>Add Products</h1>
+          <h2 style="color: #303133;">新增商品</h2>
         </div>
         <div class="card-body">
           <div class="row">

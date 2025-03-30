@@ -1,12 +1,9 @@
 <script setup>
-import { ElMessage } from 'element-plus';
+import { ElMessage ,ElMessageBox} from 'element-plus';
 import { ref, computed, onMounted } from 'vue';
 import ProductsDetail from "@/views/products/ProductsDetail.vue";
 import { getProductsList, deleteProduct, deleteBatchProducts } from '@/api/product.js';
 import { useRouter } from 'vue-router';
-import { useRoute } from 'vue-router';
-
-
 const products = ref([]);
 
 // 获取商品数据并映射格式
@@ -35,13 +32,26 @@ const fetchProductList = async () => {
 
 // 删除单个商品
 const deleteProductById = async (id) => {
-  try {
-    const result = await deleteProduct(id); // 调用删除商品的 API
-    ElMessage.success('商品删除成功');
-    fetchProductList(); // 删除成功后刷新商品列表
-  } catch (error) {
-    ElMessage.error('删除商品失败');
-  }
+  // 弹出确认框，询问是否删除
+  ElMessageBox.confirm('是否删除该商品?', '确认删除', {
+    confirmButtonText: '删除',
+    cancelButtonText: '取消',
+    type: 'warning',
+  })
+  .then(async () => {
+    // 用户点击确认后，执行删除操作
+    try {
+      const result = await deleteProduct(id); // 调用删除商品的 API
+      ElMessage.success('商品删除成功');
+      fetchProductList(); // 删除成功后刷新商品列表
+    } catch (error) {
+      ElMessage.error('删除商品失败');
+    }
+  })
+  .catch(() => {
+    // 用户点击取消，不做任何操作
+    ElMessage.info('删除操作已取消');
+  });
 };
 
 
@@ -118,14 +128,28 @@ const batchDeleteProducts = async () => {
     ElMessage.warning('请选择要删除的商品');
     return;
   }
-  try {
-    const result = await deleteBatchProducts(selectedProducts.value); // 调用批量删除的 API
-    ElMessage.success('批量删除成功');
-    fetchProductList(); // 删除成功后刷新商品列表
-    selectedProducts.value = []; // 清空选中的商品
-  } catch (error) {
-    ElMessage.error('批量删除失败');
-  }
+  
+  // 弹出确认框，询问是否批量删除
+  ElMessageBox.confirm('是否删除选中的商品?', '确认删除', {
+    confirmButtonText: '删除',
+    cancelButtonText: '取消',
+    type: 'warning',
+  })
+  .then(async () => {
+    // 用户点击确认后，执行批量删除操作
+    try {
+      const result = await deleteBatchProducts(selectedProducts.value); // 调用批量删除的 API
+      ElMessage.success('批量删除成功');
+      fetchProductList(); // 删除成功后刷新商品列表
+      selectedProducts.value = []; // 清空选中的商品
+    } catch (error) {
+      ElMessage.error('批量删除失败');
+    }
+  })
+  .catch(() => {
+    // 用户点击取消，不做任何操作
+    ElMessage.info('删除操作已取消');
+  });
 };
 
 onMounted(fetchProductList); // 组件挂载时调用
@@ -139,17 +163,16 @@ onMounted(fetchProductList); // 组件挂载时调用
         <div class="container-fluid p-0">
             <div class="card">
               <div style="padding: 20px 5px 0px 20px;">
-                <h1>Products</h1>
+                <h2 style="color: #303133;">商品列表</h2>
               </div>
               <div class="card-body">
                 <!-- 搜索和按钮 -->
                 <div class="row mb-3">
                   <div class="col-md-6 col-xl-4 mb-2 mb-md-0">
                     <div class="input-group input-group-search">
-                      <input type="text" class="form-control" v-model="searchQuery" placeholder="Search products…">
-                      <button class="btn" type="button" @click="searchProducts">
-                        <i class="align-middle" data-lucide="search"></i>
-                      </button>
+                      <input type="text" class="form-control" v-model="searchQuery" placeholder="搜索商品..." aria-label="Search"
+                        aria-describedby="button-addon2">
+                      <button class="btn" type="button" @click="searchProducts">搜索</button>                    
                     </div>
                   </div>
                   <div class="col-md-6 col-xl-8">
@@ -157,9 +180,7 @@ onMounted(fetchProductList); // 组件挂载时调用
                       <button type="button" class="btn btn-light btn-lg me-2"><i data-lucide="download"></i>
                         Export</button>
                       <button type="button" id="addProductBarToggler" class="btn btn-primary btn-lg"
-                        @click="goToAddProducts">
-                        <i data-lucide="plus"></i> Add New Product
-                      </button>
+                        @click="goToAddProducts">新增商品</button>
                     </div>
                   </div>
                 </div>
@@ -185,10 +206,11 @@ onMounted(fetchProductList); // 组件挂载时调用
                             <th class="align-middle text-end">操作
                               <!--批量删除商品按钮-->
                               <button type="button" class="btn btn-light" @click="batchDeleteProducts">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                <!-- <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                                   fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                   stroke-linejoin="round" data-lucide="trash-2"
-                                  class="lucide lucide-trash-2 align-middle"></svg>
+                                  class="lucide lucide-trash-2 align-middle"></svg> -->
+                                  批量删除
                               </button>
                             </th>
                           </tr>
@@ -236,17 +258,19 @@ onMounted(fetchProductList); // 组件挂载时调用
                                     </button> -->
                               <!--查询商品详情按钮-->
                               <button type="button" class="btn btn-light" @click="goToProductsDetail(product.id)">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                <!-- <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                                   fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                   stroke-linejoin="round" data-lucide="trash-2"
-                                  class="lucide lucide-trash-2 align-middle"></svg>
+                                  class="lucide lucide-trash-2 align-middle"></svg> -->
+                                详情
                               </button>
                               <!--删除单个商品按钮-->
                               <button type="button" class="btn btn-light" @click="deleteProductById(product.id)">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                <!-- <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
                                   fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                                   stroke-linejoin="round" data-lucide="trash-2"
-                                  class="lucide lucide-trash-2 align-middle"></svg>
+                                  class="lucide lucide-trash-2 align-middle"></svg> -->
+                                删除
                               </button>
                             </td>
                           </tr>
