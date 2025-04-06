@@ -88,7 +88,7 @@ export default {
 
         // 处理数据格式
         const formattedData = data.map(item => ({
-          name:gameNameMap[item.category] || item.category, // 游戏类别
+          name:gameNameMap[item.category] || item.category, // 游戏类别（映射为中文）
           value: item.totalQuantity, // 销量
         }));
 

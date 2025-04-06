@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { useRouter } from 'vue-router';
 import { getProductDetail } from '@/api/product.js';
@@ -12,6 +12,51 @@ const router = useRouter();
 
 const product = ref([]);
 
+//商品图片展示功能
+// activeImageIndex 表示当前大图展示的图片下标（0~4，对应 picture1~picture5）
+const activeImageIndex = ref(0);
+let carouselTimer = null;
+
+// 计算实际存在的图片 key 数组（最多五张）
+const actualPictureKeys = computed(() => {
+  if (!product.value) return [];
+  const keys = [];
+  for (let i = 1; i <= 5; i++) {
+    const key = `picture${i}`;
+    if (product.value[key] && product.value[key].trim() !== "") {
+      keys.push(key);
+    }
+  }
+  return keys;
+});
+
+// 开始轮播：每隔 3 秒自动切换，基于实际图片数量轮播
+const startCarousel = () => {
+  stopCarousel();
+  carouselTimer = setInterval(() => {
+    const count = actualPictureKeys.value.length;
+    if (count > 0) {
+      activeImageIndex.value = (activeImageIndex.value + 1) % count;
+    }
+  }, 3000);
+};
+// 停止轮播
+const stopCarousel = () => {
+  if (carouselTimer) {
+    clearInterval(carouselTimer);
+    carouselTimer = null;
+  }
+};
+// 鼠标悬停时：暂停轮播并显示对应图片
+const handleMouseOver = (index) => {
+  stopCarousel();
+  activeImageIndex.value = index;
+};
+// 鼠标离开后恢复轮播
+const handleMouseLeave = () => {
+  startCarousel();
+};
+
 const fetchProductDetail = async () => {
   const id = route.params.id; // 获取路由参数
   if (!id) {
@@ -22,37 +67,48 @@ const fetchProductDetail = async () => {
     console.log('id：', id);
     const data = await getProductDetail(id);
     console.log('获取到的商品详情数据：', data);
-    product.value = data;
+    // product.value = data;
+    // 同时合并评论和子种类数据（editions），确保数据存在
+    product.value = { 
+      ...data, 
+      comments: data.comments || [],
+      editions: data.editions || [] 
+    };
+    // 启动轮播（如果存在图片则从第一张开始）
+    activeImageIndex.value = 0;
+    startCarousel();
   } catch (error) {
     ElMessage.error('获取商品详情失败');
   }
 };
 
 
-// 初始化点赞和评论数据
-const likes = ref([
-  { count: 2, active: false }, // 点赞数据，count 为点赞数量，active 表示是否已点赞
-]);
-const comments = ref([
-  { count: 1, visible: false }, // 评论数据，count 为评论数量，visible 控制子评论显示
-]);
-// 切换点赞状态
-const toggleLike = (index) => {
-  const like = likes.value[index];
-  like.active = !like.active;
-  like.count = like.active ? like.count + 1 : like.count - 1; // 点赞数增加或减少
-};
-// 切换评论区显示状态
-const toggleComments = (index) => {
-  comments.value[index].visible = !comments.value[index].visible; // 切换评论区显示
-};
-
 // 定义跳转到 goToModifyProduct 页面的方法
 const goToModifyProduct = (id) => {
   router.push(`/modifyProduct/${id}`);
 };
 
+// 为评论点赞功能添加 toggleLike 方法
+const toggleLike = (index) => {
+  const comment = product.value.comments[index];
+  if (comment) {
+    // 如后端未返回 likeActive 和 like 字段，则初始化
+    if (comment.likeActive === undefined) {
+      comment.likeActive = false;
+    }
+    if (comment.like === undefined) {
+      comment.like = 0;
+    }
+    // 切换点赞状态，并更新点赞数
+    comment.likeActive = !comment.likeActive;
+    comment.like = comment.likeActive ? comment.like + 1 : comment.like - 1;
+  }
+};
+
 onMounted(fetchProductDetail);
+onBeforeUnmount(() => {
+  stopCarousel();
+});
 </script>
 
 <template>
@@ -67,56 +123,66 @@ onMounted(fetchProductDetail);
             <div class="col-xl-7 col-xxl-6">
               <div>
                 <div class="row">
+                  <!-- 缩略图区域 -->
                   <div class="col-4 col-md-3 col-xxl-2">
                     <div class="nav flex-column nav-outline" role="tablist" aria-orientation="vertical">
-                      <a class="nav-link active mb-2" data-bs-toggle="pill" href="#product-1" role="tab"
-                        aria-controls="product-1" aria-selected="true">
-                        <img src="@/assets/ProductsManage/img/001.png" alt=""
-                          class="img-fluid mx-auto d-block rounded mh-75px">
-                      </a>
-                      <a class="nav-link mb-2" data-bs-toggle="pill" href="#product-2" role="tab"
-                        aria-controls="product-2" aria-selected="false" tabindex="-1">
-                        <img src="@/assets/ProductsManage/img/002.png" alt=""
-                          class="img-fluid mx-auto d-block rounded mh-75px">
-                      </a>
-                      <a class="nav-link mb-2" data-bs-toggle="pill" href="#product-2" role="tab"
-                        aria-controls="product-2" aria-selected="false" tabindex="-1">
-                        <img src="@/assets/ProductsManage/img/003.png" alt=""
-                          class="img-fluid mx-auto d-block rounded mh-75px">
-                      </a>
-                      <a class="nav-link mb-2" data-bs-toggle="pill" href="#product-2" role="tab"
-                        aria-controls="product-2" aria-selected="false" tabindex="-1">
-                        <img src="@/assets/ProductsManage/img/004.png" alt=""
-                          class="img-fluid mx-auto d-block rounded mh-75px">
+                      <!-- 遍历实际存在的图片 -->
+                      <a
+                        v-for="(picKey, index) in actualPictureKeys"
+                        :key="picKey"
+                        class="nav-link p-1"
+                        :class="{ active: activeImageIndex === index }"
+                        @mouseover="handleMouseOver(index)"
+                        @mouseleave="handleMouseLeave"
+                      >
+                        <img
+                          :src="`http://localhost:8080/images/${product[picKey]}`"
+                          :alt="`商品图片${index + 1}`"
+                          class="img-fluid mx-auto d-block rounded mh-75px"
+                        />
                       </a>
                     </div>
                   </div>
+                  <!-- 主展示区域 -->
                   <div class="col-8 col-md-1 col-xxl-9">
                     <div class="tab-content p-3">
-                      <div class="tab-pane fade active show" id="product-1" role="tabpanel">
-                        <div>
-                          <img
-                            :src="product.picture ? `http://localhost:8080/images/${product.picture}` : '/src/assets/ProductsManage/img/001.png'"
-                            alt="商品图片" class="img-fluid" />
-                        </div>
-                      </div>
-                      <div class="tab-pane fade" id="product-2" role="tabpanel">
-                        <div>
-                          <img src="@/assets/ProductsManage/img/002.png" alt="" class="img-fluid mx-auto d-block">
-                        </div>
+                      <div>
+                        <!-- 仅显示实际存在的图片 -->
+                        <img
+                          v-if="actualPictureKeys.length > 0"
+                          :src="`http://localhost:8080/images/${product[actualPictureKeys[activeImageIndex]]}`"
+                          alt="商品图片"
+                          class="img-fluid"
+                        />
+                        <img
+                          v-else
+                          src="/src/assets/ProductsManage/img/loading.png"
+                          alt="加载中"
+                          class="img-fluid"
+                        />
                       </div>
                     </div>
                   </div>
                   <div>
                     <div>
-                      <h5>Classification商品分类:</h5>
+                      <h5>商品版本:</h5>
                       <div id="classificationList" class="col-8 col-md-1 col-xxl-10">
-                        <!-- 使用 v-for 循环展示每个商品种类 -->
-                        <div class="input-group mb-3 classification-item">
-                          <span class="input-group-text form-control-lg price">￥{{ product.price }}</span>
-                          <span class="form-control form-control-lg name">{{ product.name }}</span>
-                          <span class="input-group-text form-control-lg storage me-2">{{ product.storage }}件</span>
-                        </div>
+                        <!-- 当存在子种类（editions）时，循环展示每个子种类 -->
+                        <template v-if="product.editions && product.editions.length > 0">
+                          <div v-for="edition in product.editions" :key="edition.id" class="input-group mb-3 classification-item">
+                            <span class="input-group-text form-control-lg price">￥{{ edition.price }}</span>
+                            <span class="form-control form-control-lg name">{{ edition.editionName }}</span>
+                            <span class="input-group-text form-control-lg storage me-2">{{ edition.storage }}件</span>
+                          </div>
+                        </template>
+                        <!-- 否则展示单个大商品信息 -->
+                        <template v-else>
+                          <div class="input-group mb-3 classification-item">
+                            <span class="input-group-text form-control-lg price">￥{{ product.price }}</span>
+                            <span class="form-control form-control-lg name">{{ product.name }}</span>
+                            <span class="input-group-text form-control-lg storage me-2">{{ product.storage }}件</span>
+                          </div>
+                        </template>
                       </div>
                     </div>
                   </div>
@@ -138,7 +204,7 @@ onMounted(fetchProductDetail);
                 </i> 4.6 <span class="text-muted">out of 40 Reviews</span>
               </p>
 
-              <h4 class="mb-3">Price: ￥{{ product.price }}</h4>
+              <h4 class="mb-3">价格: ￥{{ product.price }}起</h4>
 
               <div class="row mb-3">
                 <div class="col-md-12">
@@ -154,7 +220,7 @@ onMounted(fetchProductDetail);
                         <path d="M9 3.236v15"></path>
                       </svg>
                     </i>
-                    <span class="align-middle">Description：{{ product.description }}</span>
+                    <span class="align-middle">简介：{{ product.description }}</span>
                   </p>
                   <p class="text-muted">
                     <i class="align-middle">
@@ -167,7 +233,7 @@ onMounted(fetchProductDetail);
                         <circle cx="7.5" cy="7.5" r=".5" fill="currentColor"></circle>
                       </svg>
                     </i>
-                    <span class="align-middle">Type:{{ product.type }}</span>
+                    <span class="align-middle">分类:{{ product.type }}</span>
                   </p>
                   <p class="text-muted">
                     <i class="align-middle">
@@ -179,7 +245,7 @@ onMounted(fetchProductDetail);
                         <path d="M3 12A9 3 0 0 0 21 12"></path>
                       </svg>
                     </i>
-                    <span class="align-middle">Storage:{{ product.storage }}件</span>
+                    <span class="align-middle">库存:{{ product.storage }}件</span>
                   </p>
 
                 </div>
@@ -205,85 +271,48 @@ onMounted(fetchProductDetail);
         <p>加载中...</p>
       </div>
 
-      <div class="card">
+      <div class="card" v-if="product.comments">
         <div class="card-header">
-          <h5 class="card-title mb-0">Comments (2)</h5>
+          <h5 class="card-title mb-0">
+            Comments (<span id="commentNum">{{ product.comments.length }}</span>)
+          </h5>
         </div>
         <div class="card-body">
-          <div class="d-flex align-items-start">
-            <img src="@/assets/ProductsManage/img/头像.jpg" width="56" height="56" class="rounded-circle me-3"
-              alt="Ashley Briggs">
+          <!-- 当评论列表为空时，显示暂无评论 -->
+          <div v-if="product.comments.length === 0">
+            <p>暂无评论</p>
+          </div>
+          <!-- 遍历评论数组 -->
+          <div v-for="(comment, index) in product.comments" :key="index" class="d-flex align-items-start">
+            <!--<img :src="comment.avatar || '@/assets/ProductsManage/img/头像.jpg'" width="56" height="56" class="rounded-circle me-3" alt="头像">-->
             <div class="flex-grow-1">
-              <small class="float-end">5m ago</small>
-              <p class="mb-2"><strong>dongenqie</strong></p>
-              <p>谁说这评论区不好啊，这评论区太棒了</p>
+              <small class="float-end">{{ comment.createTime }}</small>
+              <p class="mb-2"><strong>{{ comment.userName }}</strong></p>
+              <p>{{ comment.content }}</p>
               <div style="text-align: right;">
-                <ul style="display: flex; list-style-type: none; padding: 0; margin: 0 0 0 850px;">
-                  <!--点赞按钮-->
+                <ul style="display: flex; list-style-type: none; padding: 0; margin: 0 0 0 920px;">
+                  <!-- 点赞按钮 -->
                   <li style="margin-right: 10px;">
-                    <a class="nav-item dropdown nav-icon dropdown-toggle like-btn" @click="toggleLike(0)"
-                      :class="{ active: likes[0].active }">
+                    <a class="nav-item dropdown nav-icon dropdown-toggle like-btn" @click="toggleLike(index)"
+                      :class="{ active: comment.likeActive }">
                       <div class="position-relative">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                           stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                           data-lucide="thumbs-up" class="lucide lucide-message-circle align-middle text-body">
                           <path d="M7 10v12"></path>
-                          <path
-                            d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2h0a3.13 3.13 0 0 1 3 3.88Z">
-                          </path>
+                          <path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2h0a3.13 3.13 0 0 1 3 3.88Z"></path>
                         </svg>
-                        <span class="indicator">{{ likes[0].count }}</span>
-                      </div>
-                    </a>
-                  </li>
-                  <li>
-                    <a class="nav-item dropdown nav-icon dropdown-toggle comment-btn" @click="toggleComments(0)">
-                      <div class="position-relative">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                          data-lucide="message-circle" class="lucide lucide-message-circle align-middle text-body">
-                          <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"></path>
-                        </svg>
-                        <span class="indicator">{{ comments[0].count }}</span>
+                        <span class="indicator">{{ comment.like }}</span>
                       </div>
                     </a>
                   </li>
                 </ul>
               </div>
-              <!-- 子评论区 -->
-              <div v-show="comments[0].visible" class="sub-comments mt-3">
-                <div class="d-flex align-items-start">
-                  <a class="pe-2" href="#">
-                    <img src="@/assets/ProductsManage/img/头像.jpg" width="36" height="36" class="rounded-circle me-2"
-                      alt="Stacie Hall" />
-                  </a>
-                  <div class="flex-grow-1">
-                    <small class="float-end">Today 7:51 pm</small>
-                    <p class="mb-2"><strong>Stacie Hall</strong></p>
-                    <p>
-                      Nam pretium turpis et arcu. Duis arcu tortor, suscipit eget, imperdiet nec, imperdiet
-                      iaculis, ipsum. Sed aliquam ultrices mauris. Integer ante arcu, accumsan a, consectetuer
-                      eget, posuere ut, mauris.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-
-          <hr />
-          <div class="d-flex align-items-start">
-            <img src="@/assets/ProductsManage/img/头像.jpg" width="56" height="56" class="rounded-circle me-3"
-              alt="Chris Wood">
-            <div class="flex-grow-1">
-              <small class="float-end">Today 7:26 pm</small>
-              <p class="mb-2"><strong>Chris Wood</strong></p>
-              <p>Etiam rhoncus. Maecenas tempus, tellus eget condimentum...</p>
+            <hr/>
             </div>
           </div>
         </div>
-      </div>
+      </div>  
     </div>
   </div>
 </template>

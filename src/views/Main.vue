@@ -115,7 +115,7 @@ onMounted(() => {
             <!-- 快捷操作卡片 -->
             <el-card class="shortcut-card">
                 <el-row :gutter="20">
-                    <el-col :span="8" class="shortcut-item" @click="navigateTo('/')">
+                    <el-col :span="8" class="shortcut-item" @click="navigateTo('/addProducts')">
                         <el-icon :size="30"><Plus /></el-icon>
                         <p>新增商品</p>
                     </el-col>
@@ -134,7 +134,7 @@ onMounted(() => {
             <el-card class="itemlist-card">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                     <h3>商品列表</h3>
-                    <el-link @click="navigateTo('/product-detail')" :underline="false">查看详情 ></el-link>
+                    <el-link @click="navigateTo('/productsManage')" :underline="false">查看详情 ></el-link>
                 </div>
                 <el-table :data="itemData" stripe>
                     <el-table-column prop="id" label="ID" width="100" />

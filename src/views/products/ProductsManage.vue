@@ -17,7 +17,7 @@ const fetchProductList = async () => {
         category: item.category || '',
         type: item.type || '',
         // 如果 item.picture 存在，则拼接完整图片 URL，否则使用默认图片
-        image: item.picture ? `http://localhost:8080/images/${item.picture}` : '/src/assets/ProductsManage/img/001.png',
+        image: item.picture1 ? `http://localhost:8080/images/${item.picture1}` : '/src/assets/ProductsManage/img/loading.png',
         description: item.description || 0,
         price: `￥${item.price?.toFixed(2) || '0.00'}`,
         storage: item.storage || 0,
@@ -98,7 +98,7 @@ const closeSidebar = () => {
 
 // 分页相关：当前页码和每页显示条数
 const currentPage = ref(1);
-const pageSize = 5;
+const pageSize = 4;
 // 计算总页数
 const totalPages = computed(() => {
   return Math.ceil(filteredProducts.value.length / pageSize);
@@ -177,8 +177,6 @@ onMounted(fetchProductList); // 组件挂载时调用
                   </div>
                   <div class="col-md-6 col-xl-8">
                     <div class="text-sm-end">
-                      <button type="button" class="btn btn-light btn-lg me-2"><i data-lucide="download"></i>
-                        Export</button>
                       <button type="button" id="addProductBarToggler" class="btn btn-primary btn-lg"
                         @click="goToAddProducts">新增商品</button>
                     </div>

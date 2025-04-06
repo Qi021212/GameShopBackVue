@@ -36,7 +36,7 @@ export default {
     // 使用 ref 创建响应式数据
     const chartOption = ref({
       title: {
-        text: '近七日产品销量与销售额走势图',
+        text: '近七日产品订单量与销售额走势图',
         left: 'center',
       },
       tooltip: {
@@ -46,7 +46,7 @@ export default {
         },
       },
       legend: {
-        data: ['销量', '销售额'],
+        data: ['订单量', '销售额'],
         bottom: '10',
         orient: 'horizontal',
       },
@@ -57,9 +57,9 @@ export default {
       yAxis: [
         {
           type: 'value',
-          name: '销量',
+          name: '订单量',
           axisLabel: {
-            formatter: '{value} 件',
+            formatter: '{value} 单',
           },
         },
         {
@@ -72,7 +72,7 @@ export default {
       ],
       series: [
         {
-          name: '销量',
+          name: '订单量',
           type: 'bar',
           data: [], // 初始为空，数据从后端获取
           yAxisIndex: 0,

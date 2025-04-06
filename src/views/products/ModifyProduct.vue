@@ -1,8 +1,9 @@
 <script setup>
 import { ElMessage} from 'element-plus';
-import { ref, nextTick, onMounted } from 'vue';
+import { ref, nextTick, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { getProductDetail, updateProduct } from '@/api/product.js';
+import defaultImage from '@/assets/ProductsManage/img/loading.png';
 
 // 获取路由信息及当前商品 id
 const route = useRoute();
@@ -19,11 +20,77 @@ const productType = ref('');     // 商品类型
 const productDescription = ref('');       // 商品描述
 const productPrice = ref('');   // 当没有分类项时使用
 const productStorage = ref(''); // 当没有分类项时使用
-// 新增：定义 productPicture 变量，用于存储默认图片或上传图片
-const productPicture = ref('/src/assets/default.png');
-// 新增变量保存图片文件和预览 URL
-const selectedImageFile = ref(null);
-const imagePreview = ref('/src/assets/default.png'); // 默认图片
+
+// 图片相关：采用 imageList 数组存储已添加的图片数据，每项 { file, preview }
+const imageList = ref([]);
+// 当前选中图片槽（下标），以及鼠标悬停时临时展示的下标
+const selectedIndex = ref(0);
+const activeImageIndex = ref(0);
+
+// computed：构造缩略图列表，如果 imageList 数量不足 5，则最后补一个空槽
+const thumbnailList = computed(() => {
+  const list = [...imageList.value];
+  if (list.length < 5) {
+    list.push(null);
+  }
+  return list;
+});
+
+// computed：主展示区 URL，使用 activeImageIndex（悬停效果）
+const mainImageUrl = computed(() => {
+  if (imageList.value[activeImageIndex.value]) {
+    return imageList.value[activeImageIndex.value].preview;
+  } else {
+    return '/src/assets/ProductsManage/img/loading.png';
+  }
+});
+
+// 鼠标悬停：临时更新 activeImageIndex
+const handleThumbnailMouseOver = (index) => {
+  activeImageIndex.value = index;
+};
+// 鼠标离开：恢复为选中项
+const handleThumbnailMouseLeave = () => {
+  activeImageIndex.value = selectedIndex.value;
+};
+// 点击缩略图：设为选中项
+const onThumbnailClick = (index) => {
+  selectedIndex.value = index;
+  activeImageIndex.value = index;
+};
+
+// 文件输入变化：更新当前选中槽，并自动切换到下一个空槽（如果未满5张）
+const onImageChange = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    const preview = URL.createObjectURL(file);
+    // 如果当前选中槽已有图片，则覆盖，否则新增
+    if (selectedIndex.value < imageList.value.length) {
+      imageList.value[selectedIndex.value] = { file, preview };
+    } else {
+      imageList.value.push({ file, preview });
+    }
+    // 添加后若数量未满 5，则自动切换到下一个空槽
+    if (imageList.value.length < 5) {
+      selectedIndex.value = imageList.value.length;
+      activeImageIndex.value = selectedIndex.value;
+    } else {
+      selectedIndex.value = 4;
+      activeImageIndex.value = 4;
+    }
+  }
+};
+
+// 删除当前选中图片
+const deleteImage = () => {
+  if (selectedIndex.value < imageList.value.length) {
+    imageList.value.splice(selectedIndex.value, 1);
+    if (selectedIndex.value >= imageList.value.length) {
+      selectedIndex.value = imageList.value.length - 1;
+    }
+    activeImageIndex.value = selectedIndex.value;
+  }
+};
 
 // 商品分类相关数据
 const classificationName = ref('');       // 分类名称
@@ -35,24 +102,16 @@ const currentClassificationId = ref(null); // 当前编辑的分类项ID
 const isAddClassificationVisible = ref(false);
 const formOpacity = ref(0);
 
-// 处理文件输入变化事件
-const onImageChange = (event) => {
-  const file = event.target.files[0];
-  if (file) {
-    selectedImageFile.value = file;
-    // 使用 URL.createObjectURL 获取图片预览 URL
-    imagePreview.value = URL.createObjectURL(file);
-  }
-};
-
-// 显示添加分类表单
+// 显示添加子种类表单
 const showAddClassification = async () => {
+  // 清空表单字段，确保进入新增模式
+  resetClassificationForm();
   isAddClassificationVisible.value = true;
   await nextTick();
   formOpacity.value = 1;
 };
 
-// 取消添加分类
+// 取消添加子种类
 const cancelAddClassification = () => {
   formOpacity.value = 0;
   setTimeout(() => {
@@ -90,7 +149,7 @@ const submitClassification = () => {
   resetClassificationForm();
 };
 
-// 重置分类表单
+// 重置子种类表单
 const resetClassificationForm = () => {
   classificationName.value = '';
   classificationStorage.value = '';
@@ -98,7 +157,7 @@ const resetClassificationForm = () => {
   currentClassificationId.value = null;
 };
 
-// 编辑分类项
+// 编辑子种类项
 const editClassification = (item) => {
   classificationName.value = item.name;
   classificationStorage.value = item.storage;
@@ -109,7 +168,7 @@ const editClassification = (item) => {
   }
 };
 
-// 删除分类项
+// 删除子种类项
 const deleteClassification = (id) => {
   classificationItems.value = classificationItems.value.filter(item => item.id !== id);
 };
@@ -129,19 +188,47 @@ const fetchProductDetail = async () => {
     productCategory.value = data.category;
     productType.value = data.type;
     productDescription.value = data.description;
-    productPrice.value = data.price;    // 注意：如果 price 是数字，可直接赋值
+    productPrice.value = data.price;   
     productStorage.value = data.storage;
-    // 如果存在图片，则设置图片预览（注意：根据实际图片访问路径修改）
-    imagePreview.value = data.picture ? `http://localhost:8080/images/${data.picture}` : '/src/assets/default.png';
+    // 回显图片：构造 imageList，根据 picture1～picture5 字段（存在且非空时加入）
+    imageList.value = [];
+    for (let i = 1; i <= 5; i++) {
+      const pic = data[`picture${i}`];
+      if (pic && pic.trim() !== "") {
+        imageList.value.push({ file: null, preview: `http://localhost:8080/images/${pic}` });
+      }
+    }
+    // 初始选中第一张图片
+    selectedIndex.value = 0;
+    activeImageIndex.value = 0;
 
-    // 使用商品数据填充商品分类（目前模拟为商品名称、库存和价格）
-    classificationName.value = data.name;
-    classificationStorage.value = data.storage;
-    classificationPrice.value = data.price;
-    classificationItems.value = [
-      { id: Date.now(), name: classificationName.value, storage: classificationStorage.value, price: classificationPrice.value }
-    ];
-    currentClassificationId.value = classificationItems.value[0].id;
+    // 回显子种类数据：若存在 editions，则使用后端返回的数据，否则使用默认（单个商品数据）
+    if (data.editions && data.editions.length > 0) {
+      // 将后端 editions 数据转换为前端子种类数据格式
+      classificationItems.value = data.editions.map(edition => ({
+        id: edition.id,
+        name: edition.editionName,
+        storage: edition.storage,
+        price: edition.price
+      }));
+      // 默认回显第一个子种类
+      classificationName.value = classificationItems.value[0].name;
+      classificationStorage.value = classificationItems.value[0].storage;
+      classificationPrice.value = classificationItems.value[0].price;
+      currentClassificationId.value = classificationItems.value[0].id;
+    } else {
+      // 无子种类数据时，使用大商品信息作为默认子种类
+      classificationName.value = data.name;
+      classificationStorage.value = data.storage;
+      classificationPrice.value = data.price;
+      classificationItems.value = [{
+        id: Date.now(),
+        name: classificationName.value,
+        storage: classificationStorage.value,
+        price: classificationPrice.value
+      }];
+      currentClassificationId.value = classificationItems.value[0].id;
+    }
   } catch (error) {
     ElMessage.error('获取商品详情失败');
   }
@@ -171,8 +258,8 @@ const submitModifiedProduct = async () => {
   let price = 0.0;
   let storage = 0;
   if (classificationItems.value.length > 0) {
-    price = parseFloat(classificationItems.value[0].price);
-    storage = parseFloat(classificationItems.value[0].storage);
+    price = Math.min(...classificationItems.value.map(item => parseFloat(item.price)));
+    storage = classificationItems.value.reduce((total, item) => total + parseInt(item.storage), 0);
   } else {
     price = parseFloat(productPrice.value || 0);
     storage = parseFloat(productStorage.value || 0);
@@ -190,14 +277,22 @@ const submitModifiedProduct = async () => {
     type: productType.value,
     description: productDescription.value,
     price:price,
-    storage: storage
+    storage: storage,
+    editions: classificationItems.value.map(item => ({
+      editionName: item.name,
+      price: parseFloat(item.price),
+      storage: parseInt(item.storage)
+    }))
   };
   // 构造 FormData
   const formData = new FormData();
   formData.append('product', new Blob([JSON.stringify(updatedProduct)], { type: 'application/json' }));
-  if (selectedImageFile.value) {
-    formData.append('image', selectedImageFile.value);
-  }
+  // 遍历 imageList，将每个图片文件添加（如果 file 存在，则代表已更新，否则保持原有图片由后端处理）
+  imageList.value.forEach(imgObj => {
+    if (imgObj && imgObj.file) {
+      formData.append('image', imgObj.file);
+    }
+  });
   try {
     const result = await updateProduct(productId, formData);
     console.log('商品更新成功:', result);
@@ -215,44 +310,63 @@ const submitModifiedProduct = async () => {
   <div class="wrapper">
     <!-- Main Content -->
     <div class="main">
-      <h1 class="h3 mb-3">Add Product</h1>
-
       <div class="card">
+        <div style="padding: 20px 5px 0px 20px;">
+                <h2 style="color: #303133;">修改商品信息</h2>
+              </div>
         <div class="card-body">
           <div class="row">
             <div class="col-xl-7 col-xxl-6">
               <!-- Image Selection -->
               <div>
                 <div class="row">
-                  <div class="col-4 col-md-3 col-xxl-3">
-                    <div class="nav flex-column nav-outline">
-                      <a class="nav-link active mb-2" data-bs-toggle="pill" href="#product-1" role="tab">
-                        <img src="../../assets/ProductsManage/img/001.png" class="img-fluid rounded mh-75px" />
-                      </a>
-                      <a class="nav-link mb-2" data-bs-toggle="pill" href="#product-2" role="tab">
-                        <img src="../../assets/ProductsManage/img/002.png" class="img-fluid rounded mh-75px" />
-                      </a>
-                      <a class="nav-link mb-2" data-bs-toggle="pill" href="#product-3" role="tab">
-                        <img src="../../assets/ProductsManage/img/003.png" class="img-fluid rounded mh-75px" />
+                  <!-- 缩略图区域 -->
+                  <div class="col-4 col-md-3 col-xxl-2">
+                    <div class="nav flex-column nav-outline" role="tablist" aria-orientation="vertical">
+                      <a
+                        v-for="(item, index) in thumbnailList"
+                        :key="index"
+                        class="nav-link p-1"
+                        :class="{ active: selectedIndex === index }"
+                        @mouseover="handleThumbnailMouseOver(index)"
+                        @mouseleave="handleThumbnailMouseLeave"
+                        @click="onThumbnailClick(index)"
+                      >
+                        <img
+                          v-if="item"
+                          :src="item.preview"
+                          :alt="`商品图片${index + 1}`"
+                          class="img-fluid mx-auto d-block rounded mh-75px"
+                        />
+                        <img
+                          v-else
+                          :src="defaultImage"
+                          alt="添加图片"
+                          class="img-fluid mx-auto d-block rounded mh-75px"
+                        />
                       </a>
                     </div>
                   </div>
-                  <div class="col-8 col-md-1 col-xxl-7">
-                  <div class="tab-content p-3">
-                    <div class="tab-pane fade active show" id="product-1" role="tabpanel">
+                  <!-- 主展示区 -->
+                  <div class="col-8 col-md-1 col-xxl-9">
+                    <div class="tab-content p-3">
                       <div>
-                        <!-- 当选择文件后显示预览 -->
-                        <img :src="imagePreview" class="img-fluid mb-3" alt="预览图片" />
-                        <input class="form-control form-control-lg mb-3" type="file" placeholder="添加图片" @change="onImageChange" />
+                        <img :src="mainImageUrl" alt="预览图片" class="img-fluid" />
+                        <div class="row" style="margin-top:10px;">
+                          <div class="col-8 col-md-1 col-xxl-7">
+                            <input class="form-control mb-3" type="file" @change="onImageChange" :placeholder="imageList[selectedIndex] ? '修改该图片' : '添加图片'" />
+                          </div>
+                          <div v-if="imageList[selectedIndex]" class="col-8 col-md-1 col-xxl-5">
+                            <button class="btn btn-danger" @click="deleteImage">删除图片</button>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
                     <!-- 显示已添加的商品种类 -->
                     <div>
                       <h5>Classification商品分类:</h5>
                       <div id="classificationList" class="col-8 col-md-1 col-xxl-10">
-                        <!-- 使用 v-for 循环展示每个商品种类 -->
                         <div
                           v-for="item in classificationItems"
                           :key="item.id"
@@ -274,18 +388,23 @@ const submitModifiedProduct = async () => {
                               <h5 class="card-title md-6">添加商品种类</h5>
                               <div class="mb-3 row">
                                 <div class="col-md col-xxl-2">
-                                  <label class="col-form-label text-sm-right">Name</label>
+                                  <label class="col-form-label text-sm-right">名称</label>
                                 </div>
                                 <div class="col-md col-xxl-10">
                                   <div class="input-group">
-                                    <span class="input-group-text">@</span>
+                                    <span class="input-group-text">
+                                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="edit-3" class="lucide lucide-edit-3 align-middle">
+                                        <path d="M12 20h9"></path>
+                                        <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+                                      </svg>
+                                    </span>
                                     <input type="text" class="form-control" placeholder="Name" v-model="classificationName" />
                                   </div>
                                 </div>
                               </div>
                               <div class="mb-3 row">
                                 <div class="col-md col-xxl-2">
-                                  <label class="col-form-label text-sm-right">Storage</label>
+                                  <label class="col-form-label text-sm-right">库存</label>
                                 </div>
                                 <div class="col-md col-xxl-10">
                                   <div class="input-group">
@@ -302,11 +421,17 @@ const submitModifiedProduct = async () => {
                               </div>
                               <div class="mb-3 row">
                                 <div class="col-md col-xxl-2">
-                                  <label class="col-form-label text-sm-right">Price</label>
+                                  <label class="col-form-label text-sm-right">价格</label>
                                 </div>
                                 <div class="col-md col-xxl-10">
                                   <div class="input-group">
-                                    <span class="input-group-text">@</span>
+                                    <span class="input-group-text">
+                                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="shopping-cart" class="lucide lucide-shopping-cart align-middle">
+                                        <circle cx="8" cy="21" r="1"></circle>
+                                        <circle cx="19" cy="21" r="1"></circle>
+                                        <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path>
+                                      </svg>
+                                    </span>
                                     <input type="text" class="form-control" placeholder="Price" v-model="classificationPrice" />
                                   </div>
                                 </div>
