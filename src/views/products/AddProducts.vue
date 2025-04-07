@@ -188,7 +188,7 @@ const submitProduct = async () => {
     price = parseFloat(productPrice.value || 0);
     storage = parseFloat(productStorage.value || 0);
   }
-  
+
 
   if (price <= 0) {
     ElMessage.error('商品价格必须大于0');
@@ -207,15 +207,15 @@ const submitProduct = async () => {
     // 如果存在分类项，则映射为多个子商品；否则以单一子商品的形式提交
     editions: classificationItems.value.length > 0
       ? classificationItems.value.map(item => ({
-          editionName: item.name,
-          price: parseFloat(item.price),
-          storage: parseInt(item.storage)
-        }))
+        editionName: item.name,
+        price: parseFloat(item.price),
+        storage: parseInt(item.storage)
+      }))
       : [{
-          editionName: productName.value, // 默认使用商品名称作为版本名称
-          price: parseFloat(productPrice.value || 0),
-          storage: parseInt(productStorage.value || 0)
-        }]
+        editionName: productName.value, // 默认使用商品名称作为版本名称
+        price: parseFloat(productPrice.value || 0),
+        storage: parseInt(productStorage.value || 0)
+      }]
 
   };
 
@@ -268,27 +268,12 @@ const submitProduct = async () => {
                   <div class="col-4 col-md-3 col-xxl-2">
                     <div class="nav flex-column nav-outline" role="tablist" aria-orientation="vertical">
                       <!-- 遍历 thumbnailList -->
-                      <a
-                        v-for="(item, index) in thumbnailList"
-                        :key="index"
-                        class="nav-link p-1"
-                        :class="{ active: selectedIndex === index }"
-                        @mouseover="handleThumbnailMouseOver(index)"
-                        @mouseleave="handleThumbnailMouseLeave"
-                        @click="onThumbnailClick(index)"
-                      >
-                        <img
-                          v-if="item"
-                          :src="item.preview"
-                          :alt="`商品图片${index + 1}`"
-                          class="img-fluid mx-auto d-block rounded mh-75px"
-                        />
-                        <img
-                          v-else
-                          :src="defaultImage"
-                          alt="添加图片"
-                          class="img-fluid mx-auto d-block rounded mh-75px"
-                        />
+                      <a v-for="(item, index) in thumbnailList" :key="index" class="nav-link p-1"
+                        :class="{ active: selectedIndex === index }" @mouseover="handleThumbnailMouseOver(index)"
+                        @mouseleave="handleThumbnailMouseLeave" @click="onThumbnailClick(index)">
+                        <img v-if="item" :src="item.preview" :alt="`商品图片${index + 1}`"
+                          class="img-fluid mx-auto d-block rounded mh-75px" />
+                        <img v-else :src="defaultImage" alt="添加图片" class="img-fluid mx-auto d-block rounded mh-75px" />
                       </a>
                     </div>
                   </div>
@@ -300,102 +285,118 @@ const submitProduct = async () => {
                         <!-- 如果当前选中的槽已有图片，则显示修改和删除按钮，否则显示添加按钮 -->
                         <div class="row">
                           <!-- <div style="margin-top:10px;"> -->
-                            <div class="col-8 col-md-1 col-xxl-7" style="margin-top:10px;">
-                              <input class="form-control mb-3" type="file" @change="onImageChange" :placeholder="imageList[selectedIndex] ? '修改该图片' : '添加图片'" />
-                            </div>
-                            <div v-if="imageList[selectedIndex]" class="col-8 col-md-1 col-xxl-5" style="margin-top:10px;">
-                              <button class="btn btn-danger" @click="deleteImage">删除图片</button>
-                            </div>
+                          <div class="col-8 col-md-1 col-xxl-7" style="margin-top:10px;">
+                            <input class="form-control mb-3" type="file" @change="onImageChange"
+                              :placeholder="imageList[selectedIndex] ? '修改该图片' : '添加图片'" />
+                          </div>
+                          <div v-if="imageList[selectedIndex]" class="col-8 col-md-1 col-xxl-5"
+                            style="margin-top:10px;">
+                            <button class="btn btn-danger" @click="deleteImage">删除图片</button>
+                          </div>
 
-                        <!-- </div> -->
+                          <!-- </div> -->
                         </div>
                       </div>
                     </div>
                   </div>
-                    <!-- 显示已添加的商品种类 -->
-                    <div>
-                      <h5>Classification商品分类:</h5>
-                      <div id="classificationList" class="col-8 col-md-1 col-xxl-10">
-                        <!-- 使用 v-for 循环展示每个商品种类 -->
-                        <div
-                          v-for="item in classificationItems"
-                          :key="item.id"
-                          class="input-group mb-3 classification-item"
-                        >
-                          <span class="input-group-text form-control-lg price">￥{{ item.price }}</span>
-                          <span class="form-control form-control-lg name">{{ item.name }}</span>
-                          <span class="input-group-text form-control-lg storage me-2">{{ item.storage }}件</span>
-                          <button class="btn btn-warning btn-sm editBtn badge-subtle-warning rounded-1" @click="editClassification(item)">修改</button>
-                          <button class="btn btn-danger btn-sm deleteBtn badge-subtle-danger rounded-1" @click="deleteClassification(item.id)">删除</button>
-                        </div>
+                  <!-- 显示已添加的商品种类 -->
+                  <div>
+                    <h5>Classification商品分类:</h5>
+                    <div id="classificationList" class="col-8 col-md-1 col-xxl-10">
+                      <!-- 使用 v-for 循环展示每个商品种类 -->
+                      <div v-for="item in classificationItems" :key="item.id"
+                        class="input-group mb-3 classification-item">
+                        <span class="input-group-text form-control-lg price">￥{{ item.price }}</span>
+                        <span class="form-control form-control-lg name">{{ item.name }}</span>
+                        <span class="input-group-text form-control-lg storage me-2">{{ item.storage }}件</span>
+                        <button class="btn btn-warning btn-sm editBtn badge-subtle-warning rounded-1"
+                          @click="editClassification(item)">修改</button>
+                        <button class="btn btn-danger btn-sm deleteBtn badge-subtle-danger rounded-1"
+                          @click="deleteClassification(item.id)">删除</button>
                       </div>
                     </div>
-                    <div class="col-8 col-md-1 col-xxl-10">
+                  </div>
+                  <div class="col-8 col-md-1 col-xxl-10">
                     <!-- 添加商品种类功能子框，带渐变过渡效果 -->
-                    <div v-if="isAddClassificationVisible" class="card" id="classificationForm" :style="{ opacity: formOpacity }">
-                          <div class="card-body">
-                            <form @submit.prevent="submitClassification">
-                              <h5 class="card-title md-6">添加商品种类</h5>
-                              <div class="mb-3 row">
-                                <div class="col-md col-xxl-2">
-                                  <label class="col-form-label text-sm-right">名称</label>
-                                </div>
-                                <div class="col-md col-xxl-10">
-                                  <div class="input-group">
-                                    <span class="input-group-text">
-                                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="edit-3" class="lucide lucide-edit-3 align-middle">
-                                        <path d="M12 20h9"></path>
-                                        <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
-                                      </svg>
-                                    </span>
-                                    <input type="text" class="form-control" placeholder="Name" v-model="classificationName" />
-                                  </div>
-                                </div>
+                    <div v-if="isAddClassificationVisible" class="card" id="classificationForm"
+                      :style="{ opacity: formOpacity }">
+                      <div class="card-body">
+                        <form @submit.prevent="submitClassification">
+                          <h5 class="card-title md-6">添加商品种类</h5>
+                          <div class="mb-3 row">
+                            <div class="col-md col-xxl-2">
+                              <label class="col-form-label text-sm-right">名称</label>
+                            </div>
+                            <div class="col-md col-xxl-10">
+                              <div class="input-group">
+                                <span class="input-group-text">
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" data-lucide="edit-3"
+                                    class="lucide lucide-edit-3 align-middle">
+                                    <path d="M12 20h9"></path>
+                                    <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+                                  </svg>
+                                </span>
+                                <input type="text" class="form-control" placeholder="Name"
+                                  v-model="classificationName" />
                               </div>
-                              <div class="mb-3 row">
-                                <div class="col-md col-xxl-2">
-                                  <label class="col-form-label text-sm-right">库存</label>
-                                </div>
-                                <div class="col-md col-xxl-10">
-                                  <div class="input-group">
-                                    <span class="input-group-text">
-                                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="database" class="lucide lucide-database align-middle">
-                                        <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
-                                        <path d="M3 5V19A9 3 0 0 0 21 19V5"></path>
-                                        <path d="M3 12A9 3 0 0 0 21 12"></path>
-                                      </svg>
-                                    </span>
-                                    <input type="text" class="form-control" placeholder="Storage" v-model="classificationStorage" />
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="mb-3 row">
-                                <div class="col-md col-xxl-2">
-                                  <label class="col-form-label text-sm-right">价格</label>
-                                </div>
-                                <div class="col-md col-xxl-10">
-                                  <div class="input-group">
-                                    <span class="input-group-text">
-                                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="shopping-cart" class="lucide lucide-shopping-cart align-middle">
-                                        <circle cx="8" cy="21" r="1"></circle>
-                                        <circle cx="19" cy="21" r="1"></circle>
-                                        <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path>
-                                      </svg>
-                                    </span>
-                                    <input type="text" class="form-control" placeholder="Price" v-model="classificationPrice" />
-                                  </div>
-                                </div>
-                              </div>
-                              <div class="row">
-                                <div class="col-sm-10 ml-sm-auto">
-                                  <button type="submit" class="btn btn-primary">提交</button>
-                                  <button type="button" class="btn btn-light" @click="cancelAddClassification">取消</button>
-                                </div>
-                              </div>
-                            </form>
+                            </div>
                           </div>
-                        </div>
+                          <div class="mb-3 row">
+                            <div class="col-md col-xxl-2">
+                              <label class="col-form-label text-sm-right">库存</label>
+                            </div>
+                            <div class="col-md col-xxl-10">
+                              <div class="input-group">
+                                <span class="input-group-text">
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" data-lucide="database"
+                                    class="lucide lucide-database align-middle">
+                                    <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+                                    <path d="M3 5V19A9 3 0 0 0 21 19V5"></path>
+                                    <path d="M3 12A9 3 0 0 0 21 12"></path>
+                                  </svg>
+                                </span>
+                                <input type="text" class="form-control" placeholder="Storage"
+                                  v-model="classificationStorage" />
+                              </div>
+                            </div>
+                          </div>
+                          <div class="mb-3 row">
+                            <div class="col-md col-xxl-2">
+                              <label class="col-form-label text-sm-right">价格</label>
+                            </div>
+                            <div class="col-md col-xxl-10">
+                              <div class="input-group">
+                                <span class="input-group-text">
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" data-lucide="shopping-cart"
+                                    class="lucide lucide-shopping-cart align-middle">
+                                    <circle cx="8" cy="21" r="1"></circle>
+                                    <circle cx="19" cy="21" r="1"></circle>
+                                    <path
+                                      d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12">
+                                    </path>
+                                  </svg>
+                                </span>
+                                <input type="text" class="form-control" placeholder="Price"
+                                  v-model="classificationPrice" />
+                              </div>
+                            </div>
+                          </div>
+                          <div class="row">
+                            <div class="col-sm-10 ml-sm-auto">
+                              <button type="submit" class="btn btn-primary">提交</button>
+                              <button type="button" class="btn btn-light" @click="cancelAddClassification">取消</button>
+                            </div>
+                          </div>
+                        </form>
+                      </div>
                     </div>
+                  </div>
 
                 </div>
               </div>
@@ -403,68 +404,82 @@ const submitProduct = async () => {
 
             <!--商品详细信息-->
             <div class="col-xl-5 col-xxl-6">
-									<div class="mt-3">
-										<h4 class="mt-1">商品详细信息</h4>
-										<div class="col-4 col-md-3 col-xxl-10">
-											<div class="mt-3">
-												<div class="row g-2">
-													<div class="col-md col-xxl-8">
-														<div class="input-group mb-3">
-															<span class="input-group-text form-control-lg">@</span>
-															<input type="text" class="form-control" placeholder="游戏名称" v-model="productName">
-														</div>
-													</div>
-													<div class="col-md col-xxl-4">
-														<div class="input-group ">
-															<select class="form-select form-control-lg" v-model="productCategory">
-															<option>category</option>
-                                <option class="badge-subtle-primary">action</option>
-                                <option class="badge-subtle-secondary">casul</option>
-                                <option class="badge-subtle-success">role</option>
-                                <option class="badge-subtle-danger">adventure</option>
-                                <option class="badge-subtle-warning">sports</option>
-                                <option class="badge-subtle-info">simulation</option>
-														  </select>
-														</div>
-													</div>
-												</div>
-											</div>
-										</div>
-
-										<div class="row mb-3 mt-3">
-											<div class="col-md-10">
+              <div class="mt-3">
+                <h4 class="mt-1">商品详细信息</h4>
+                <div class="col-4 col-md-3 col-xxl-10">
+                  <div class="mt-3">
+                    <div class="row g-2">
+                      <div class="col-md col-xxl-8">
                         <div class="input-group mb-3">
-															<span class="input-group-text form-control-lg">
-															  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="tag" class="lucide lucide-tag align-middle"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"></path><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"></circle></svg>
-                              </span>
-															<input type="text" class="form-control" placeholder="游戏类型Type" v-model="productType">
-										    </div>
-												<div class="mt-2 mb-3">
-													<div class="form-floating">
-														<textarea class="form-control" placeholder="Leave a comment here" id="floatingTextarea1" style="height: 200px" v-model="productDescription"></textarea>
-														<label for="floatingTextarea1">
-															游戏介绍
-														</label>
-													</div>
-												</div>
-												<div class="mt-2 mb-3">
-                          <!-- 添加商品种类按钮 -->
-                          <div>
-                            <a class="btn btn-primary mb-3 me-1" v-if="!isAddClassificationVisible" @click="showAddClassification">
-                              <span class="align-middle">添加商品种类</span>
-                            </a>
-                            <button type="button" class="btn btn-primary mb-3 me-1" @click="submitProduct">
-                              <i class="align-middle">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-lucide="edit" class="lucide lucide-edit align-middle me-2"><path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.375 2.625a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4Z"></path></svg>
-                              </i>
-                              <span class="align-middle">提交商品信息</span>
-                            </button>
-                          </div>
+                          <span class="input-group-text form-control-lg">@</span>
+                          <input type="text" class="form-control" placeholder="游戏名称" v-model="productName">
                         </div>
-											</div>
-										</div>
-									</div>
-								</div>
+                      </div>
+                      <div class="col-md col-xxl-4">
+                        <div class="input-group ">
+                          <select class="form-select form-control-lg" v-model="productCategory">
+                            <option>category</option>
+                            <option class="badge-subtle-primary">action</option>
+                            <option class="badge-subtle-secondary">casul</option>
+                            <option class="badge-subtle-success">role</option>
+                            <option class="badge-subtle-danger">adventure</option>
+                            <option class="badge-subtle-warning">sports</option>
+                            <option class="badge-subtle-info">simulation</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="row mb-3 mt-3">
+                  <div class="col-md-10">
+                    <div class="input-group mb-3">
+                      <span class="input-group-text form-control-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                          data-lucide="tag" class="lucide lucide-tag align-middle">
+                          <path
+                            d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z">
+                          </path>
+                          <circle cx="7.5" cy="7.5" r=".5" fill="currentColor"></circle>
+                        </svg>
+                      </span>
+                      <input type="text" class="form-control" placeholder="具体分类" v-model="productType">
+                    </div>
+                    <div class="mt-2 mb-3">
+                      <div class="form-floating">
+                        <textarea class="form-control" placeholder="Leave a comment here" id="floatingTextarea1"
+                          style="height: 200px" v-model="productDescription"></textarea>
+                        <label for="floatingTextarea1">
+                          游戏介绍
+                        </label>
+                      </div>
+                    </div>
+                    <div class="mt-2 mb-3">
+                      <!-- 添加商品种类按钮 -->
+                      <div>
+                        <a class="btn btn-primary mb-3 me-1" v-if="!isAddClassificationVisible"
+                          @click="showAddClassification">
+                          <span class="align-middle">添加商品种类</span>
+                        </a>
+                        <button type="button" class="btn btn-primary mb-3 me-1" @click="submitProduct">
+                          <i class="align-middle">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+                              fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                              stroke-linejoin="round" data-lucide="edit" class="lucide lucide-edit align-middle me-2">
+                              <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                              <path d="M18.375 2.625a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4Z"></path>
+                            </svg>
+                          </i>
+                          <span class="align-middle">提交商品信息</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

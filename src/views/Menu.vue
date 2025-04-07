@@ -2,12 +2,9 @@
 import { ElContainer, ElHeader, ElMain, ElMessageBox, ElAside, ElMenu, ElMenuItem, ElSubMenu, ElAvatar, ElLink } from 'element-plus';
 import { HomeFilled, GoodsFilled, List, UserFilled, CircleCloseFilled } from '@element-plus/icons-vue';
 import { useRouter } from 'vue-router';
-import { ref } from 'vue';
 const router = useRouter();
 const route = router.currentRoute;
 
-// 模拟登录用户(未获取版)
-const currentUser = ref('管理员'); // 可以根据实际登录用户动态设置
 
 
 //退出登录

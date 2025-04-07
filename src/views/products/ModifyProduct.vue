@@ -13,6 +13,24 @@ const productId = route.params.id; // 路由参数中的商品 id
 // 用于保存后端返回的完整商品对象
 const product = ref(null);
 
+// 存储初始加载的图片 URL，固定长度为5
+const originalImageList = ref(new Array(5).fill(null));
+// 存储初始加载时的图片 URL 顺序，固定长度为5
+const initialImageOrder = ref(new Array(5).fill(null));
+// 新增：构造当前图片顺序的数组，长度固定为 5，空槽以 "" 表示
+// 构造当前图片顺序的数组，固定长度为5，空槽以""表示
+const newImageOrder = computed(() => {
+  // 取出所有非空图片的 preview 字符串
+  const nonNull = imageList.value
+    .filter(item => item !== null && item.preview)
+    .map(item => item.preview);
+  // 补齐空槽到 5 个
+  while (nonNull.length < 5) {
+    nonNull.push("");
+  }
+  return nonNull;
+});
+
 // 商品详细信息相关数据
 const productName = ref('');              // 商品名称
 const productCategory = ref('');          // 商品类别
@@ -29,11 +47,7 @@ const activeImageIndex = ref(0);
 
 // computed：构造缩略图列表，如果 imageList 数量不足 5，则最后补一个空槽
 const thumbnailList = computed(() => {
-  const list = [...imageList.value];
-  if (list.length < 5) {
-    list.push(null);
-  }
-  return list;
+  return imageList.value;
 });
 
 // computed：主展示区 URL，使用 activeImageIndex（悬停效果）
@@ -59,35 +73,28 @@ const onThumbnailClick = (index) => {
   activeImageIndex.value = index;
 };
 
-// 文件输入变化：更新当前选中槽，并自动切换到下一个空槽（如果未满5张）
 const onImageChange = (event) => {
   const file = event.target.files[0];
   if (file) {
     const preview = URL.createObjectURL(file);
-    // 如果当前选中槽已有图片，则覆盖，否则新增
-    if (selectedIndex.value < imageList.value.length) {
-      imageList.value[selectedIndex.value] = { file, preview };
-    } else {
-      imageList.value.push({ file, preview });
-    }
-    // 添加后若数量未满 5，则自动切换到下一个空槽
-    if (imageList.value.length < 5) {
-      selectedIndex.value = imageList.value.length;
-      activeImageIndex.value = selectedIndex.value;
-    } else {
-      selectedIndex.value = 4;
-      activeImageIndex.value = 4;
-    }
+    // 直接更新对应槽
+    imageList.value[selectedIndex.value] = { file, preview };
   }
 };
 
-// 删除当前选中图片
 const deleteImage = () => {
   if (selectedIndex.value < imageList.value.length) {
-    imageList.value.splice(selectedIndex.value, 1);
-    if (selectedIndex.value >= imageList.value.length) {
-      selectedIndex.value = imageList.value.length - 1;
+    // 过滤掉被删除的那个元素
+    let newList = imageList.value.filter((item, index) => index !== selectedIndex.value);
+    // 补齐空槽到 5 个
+    while (newList.length < 5) {
+      newList.push(null);
     }
+    // 将新数组赋值给 imageList 以触发响应更新
+    imageList.value = newList;
+    // 重新计算选中下标：选中最后一个非空图片，如果没有则为0
+    const nonNullCount = newList.filter(item => item !== null).length;
+    selectedIndex.value = nonNullCount > 0 ? Math.min(selectedIndex.value, nonNullCount - 1) : 0;
     activeImageIndex.value = selectedIndex.value;
   }
 };
@@ -190,15 +197,22 @@ const fetchProductDetail = async () => {
     productDescription.value = data.description;
     productPrice.value = data.price;   
     productStorage.value = data.storage;
-    // 回显图片：构造 imageList，根据 picture1～picture5 字段（存在且非空时加入）
-    imageList.value = [];
+    // 固定构造 imageList 数组（长度为5），并保存原始图片 URL
+    imageList.value = new Array(5).fill(null);
+    originalImageList.value = new Array(5).fill(null);
     for (let i = 1; i <= 5; i++) {
       const pic = data[`picture${i}`];
       if (pic && pic.trim() !== "") {
-        imageList.value.push({ file: null, preview: `http://localhost:8080/images/${pic}` });
+        const url = `http://localhost:8080/images/${pic}`;
+        imageList.value[i - 1] = { file: null, preview: url };
+        originalImageList.value[i - 1] = url;
+      } else {
+        imageList.value[i - 1] = null;
+        originalImageList.value[i - 1] = null;
       }
     }
-    // 初始选中第一张图片
+    // 保存初始图片顺序（深拷贝）
+    initialImageOrder.value = [...originalImageList.value];
     selectedIndex.value = 0;
     activeImageIndex.value = 0;
 
@@ -284,16 +298,27 @@ const submitModifiedProduct = async () => {
       storage: parseInt(item.storage)
     }))
   };
-  // 构造 FormData
-  const formData = new FormData();
-  formData.append('product', new Blob([JSON.stringify(updatedProduct)], { type: 'application/json' }));
-  // 遍历 imageList，将每个图片文件添加（如果 file 存在，则代表已更新，否则保持原有图片由后端处理）
-  imageList.value.forEach(imgObj => {
+// 构造 FormData
+const formData = new FormData();
+formData.append('product', new Blob([JSON.stringify(updatedProduct)], { type: 'application/json' }));
+// 将新图片顺序以 JSON 形式传递（直接传字符串）
+const plainImageOrder = JSON.parse(JSON.stringify(newImageOrder.value));
+formData.append('imageOrder', JSON.stringify(plainImageOrder));
+
+  // 对于每个图片槽 1~5
+  for (let i = 0; i < 5; i++) {
+    const imgObj = imageList.value[i];
     if (imgObj && imgObj.file) {
-      formData.append('image', imgObj.file);
+      // 如果上传了新文件，则更新该槽
+      formData.append(`image_${i+1}`, imgObj.file);
     }
-  });
+    // 对于未上传新文件，我们不再传空参数，让后端根据 imageOrder 更新
+  }
   try {
+    // 调试代码：打印 FormData 中的所有数据
+    for (let pair of formData.entries()) {
+      console.log(pair[0] + ':', pair[1]);
+    }
     const result = await updateProduct(productId, formData);
     console.log('商品更新成功:', result);
     ElMessage.success('商品更新成功！');
@@ -312,8 +337,8 @@ const submitModifiedProduct = async () => {
     <div class="main">
       <div class="card">
         <div style="padding: 20px 5px 0px 20px;">
-                <h2 style="color: #303133;">修改商品信息</h2>
-              </div>
+          <h2 style="color: #303133;">修改商品信息</h2>
+        </div>
         <div class="card-body">
           <div class="row">
             <div class="col-xl-7 col-xxl-6">
